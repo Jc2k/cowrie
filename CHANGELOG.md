@@ -1,3 +1,4 @@
+* 2017-08-22 Can store uploaded and downloaded artifacts to S3
 * 2017-07-03 Cuckoo v2 integration
 * 2017-05-16 now combines config files: cowrie.cfg.dist and cowrie.cfg in this order
 * 2017-05-09 start.sh and stop.sh have been replace by bin/cowrie start|stop
