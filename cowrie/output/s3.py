@@ -55,10 +55,10 @@ class Output(cowrie.core.output.Output):
             )
         except ClientError as e:
             if e.response['Error']['Code'] == '404':
-                return False
+                defer.returnValue(False)
             raise
 
-        return True
+        defer.returnValue(True)
 
     @defer.inlineCallbacks
     def upload(self, shasum, filename):
