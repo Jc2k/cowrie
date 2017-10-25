@@ -9,6 +9,7 @@ import os
 from twisted.internet import defer, threads
 
 from botocore.session import get_session
+from botocore.exceptions import ClientError
 
 import cowrie.core.output
 
