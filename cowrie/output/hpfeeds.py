@@ -11,6 +11,7 @@ import struct
 import hashlib
 import json
 import socket
+import ssl
 import uuid
 
 from twisted.python import log
@@ -126,13 +127,14 @@ class FeedUnpack(object):
 
 
 class hpclient(object):
-    def __init__(self, server, port, ident, secret, debug):
+    def __init__(self, server, port, ident, secret, debug, certfile=None):
         log.msg('hpfeeds client init broker {0}:{1}, identifier {2}'.format(server, port, ident))
         self.server, self.port = server, int(port)
         self.ident, self.secret = ident.encode('latin1'), secret.encode('latin1')
         self.debug = debug
         self.unpacker = FeedUnpack()
         self.state = 'INIT'
+        self.certfile = certfile
 
         self.connect()
         self.sendfiles = []
@@ -141,6 +143,11 @@ class hpclient(object):
 
     def connect(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if self.certfile:
+            context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+            context.load_verify_locations(self.certfile)
+            context.check_hostname = False
+            self.s = context.wrap_socket(self.s)
         self.s.settimeout(3)
         try: self.s.connect((self.server, self.port))
         except:
@@ -181,6 +188,9 @@ class hpclient(object):
         try: d = self.s.recv(BUFSIZ)
         except socket.timeout:
             return
+        except ssl.SSLError as e:
+            if 'The read operation timed out' in str(e):
+                return
 
         if not d:
             if self.debug: log.msg('hpclient connection closed?')
@@ -270,10 +280,12 @@ class Output(cowrie.core.output.Output):
         """
         server = CONFIG.get('output_hpfeeds', 'server')
         port = CONFIG.getint('output_hpfeeds', 'port')
+        if CONFIG.has_option('output_hpfeeds', 'tlscert'):
+            tlscert = CONFIG.get('output_hpfeeds', 'tlscert')
         ident = CONFIG.get('output_hpfeeds', 'identifier')
         secret = CONFIG.get('output_hpfeeds', 'secret')
         debug = CONFIG.getboolean('output_hpfeeds', 'debug')
-        self.client = hpclient(server, port, ident, secret, debug)
+        self.client = hpclient(server, port, ident, secret, debug, tlscert)
         self.meta = {}
 
 
