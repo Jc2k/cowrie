@@ -7,6 +7,9 @@ requests
 # elasticsearch
 elasticsearch
 
+# hpfeeds
+hpfeeds3
+
 # mysql
 # If this fails, see documentation /home/cowrie/cowrie/doc/sql/README.md
 #
@@ -36,5 +39,3 @@ influxdb
 
 # dblog_xmpp
 wokkel==18.0.0rc3
-
-
